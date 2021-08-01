@@ -73,6 +73,8 @@ const refs = {
   lightboxOverlay: document.querySelector('.lightbox__overlay'),
 };
 
+let activeIndex = null;
+
 const galleryItemElements = ({ preview, original, description }) => {
   const addGalleryListImg =
   `<li class="gallery__item">
@@ -93,22 +95,86 @@ refs.lightboxOverlay.addEventListener('click', onModalClose);
 
 function onOpenModal(e) {
   e.preventDefault();
-    refs.modalWindowRef.classList.add('is-open');
-    refs.lightboxImgRef.src = e.target.dataset.source;
-    refs.lightboxImgRef.alt = e.target.alt;
+
+  if (e.target.nodeName !== 'IMG') {
+    return
+  }
+
+  // if (
+  //   !e.target.classList.contains('gallery__link') &&
+  //   !e.target.classList.contains('gallery__image')
+  // ) {
+  //   return;
+  // }
+
+  galleryItems.forEach((el, index) => {
+    if (el.original === e.target.dataset.source) {
+      activeIndex = index;
+    }
+  });
+
+  refs.modalWindowRef.classList.add('is-open');
+  refs.lightboxImgRef.src = e.target.dataset.source;
+  refs.lightboxImgRef.alt = e.target.alt;
+  
+  window.addEventListener('keydown', keyboardManipulation);
 }
 
 function onModalClose(e) {
-  e.preventDefault();
+  if (e?.target.nodeName === 'IMG') {
+    return;
+  }
   refs.modalWindowRef.classList.remove("is-open");
   refs.lightboxImgRef.src = '';
   refs.lightboxImgRef.alt = '';
+
+  window.removeEventListener('keydown', keyboardManipulation);
 }
 
-function closeModalESC(e) {
-  if (e.key !== 'Escape') {
-    return;
+// function closeModalESC(e) {
+//   if (e.key !== 'Escape') {
+//     return;
+//   }
+//   refs.modalWindowRef.classList.remove('is-open');
+// }
+// window.addEventListener('keyup', closeModalESC);
+
+function keyboardManipulation({ key }) {
+  switch (key) {
+    case 'Escape':
+      onModalClose();
+      break;
+    
+    case activeIndex < galleryItems.length - 1 && 'ArrowRight':
+      activeIndex += 1;
+      refs.lightboxImgRef.src = galleryItems[activeIndex].original;
+      break;
+    case activeIndex > 0 && 'ArrowLeft':
+      activeIndex -= 1;
+      refs.lightboxImgRef.src = galleryItems[activeIndex].original;
+      break;
+    
+    case activeIndex === galleryItems.length - 1 && 'ArrowRight':
+      activeIndex = 0;
+      refs.lightboxImgRef.src = galleryItems[activeIndex].original;
+      break;
+    case activeIndex === 0 && 'ArrowLeft':
+      activeIndex = galleryItems.length - 1;
+      refs.lightboxImgRef.src = galleryItems[activeIndex].original;
+      break;
+    
+    default:
+      break;
   }
-  refs.modalWindowRef.classList.remove('is-open');
 }
-window.addEventListener('keyup', closeModalESC);
+
+
+// не работает, надо по фиксить
+
+// function openByEnter(e) {
+//   if (!e.target.classList.contains('gallery__link') || e.key !== 'Enter') {
+//     return;
+//   }
+//   onOpenModal();
+// window.addEventListener('keydown', openByEnter);
+// };
