@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "parcel src/*.html",
     "start": "node index.js",
     "build": "parcel build src/*.html --public-url /goit-js-hw-09-gallery/",
     "deploy": "gh-pages -d dist",
